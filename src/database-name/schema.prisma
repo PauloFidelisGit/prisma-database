@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./build"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  //shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum TiposUsuarios {
+  administrador
+  usuario
+}
+
+model Administradores {
+  ID             Int           @id @default(autoincrement())
+  TIPO_USUARIO   TiposUsuarios @default(administrador)
+  REGISTRO_ATIVO Boolean       @default(true)
+  NOME           String
+  EMAIL          String        @unique
+  SENHA          String
+  ATUALIZADO_EM  DateTime?
+  CRIADO_EM      DateTime
+}
+
+model Usuarios {
+  ID                     Int                 @id @default(autoincrement())
+  TIPO_USUARIO           TiposUsuarios       @default(usuario)
+  REGISTRO_ATIVO         Boolean             @default(true)
+  NOME                   String
+  EMAIL                  String              @unique
+  SENHA                  String
+  ATUALIZADO_EM          DateTime?
+  CRIADO_EM              DateTime
+  INFORMACOES_USUARIO    InformacoesUsuario? @relation(fields: [ID_INFORMACOES_USUARIO], references: [ID], onDelete: Cascade, onUpdate: Cascade)
+  ID_INFORMACOES_USUARIO Int?                @unique
+  PERMISSOES             Permissoes          @relation(fields: [ID_PERMISSOES], references: [ID], onDelete: Cascade, onUpdate: Cascade)
+  ID_PERMISSOES          Int                 @unique
+}
+
+model InformacoesUsuario {
+  ID            Int       @id @default(autoincrement())
+  CPF           String?   @unique @db.VarChar(11)
+  OBSERVACOES   String?   @db.Text
+  TELEFONE      String?
+  LOGRADOURO    String?
+  NUMERO        String?
+  BAIRRO        String?
+  CEP           String?
+  CIDADE        String?
+  ESTADO        String?
+  ATUALIZADO_EM DateTime?
+  CRIADO_EM     DateTime
+  USUARIO       Usuarios?
+}
+
+model Permissoes {
+  ID            Int       @id @default(autoincrement())
+  USER          Json      @default("{\"update\":true,\"findUnique\":true,\"updatePassword\":true}")
+  JUDICIALCALC  Json      @default("{\"create\":true,\"createAndSave\":true,\"update\":true,\"search\":true,\"findUnique\":true,\"findMany\":true,\"destroy\":true}")
+  ATUALIZADO_EM DateTime?
+  CRIADO_EM     DateTime
+  USUARIOS      Usuarios?
+}
